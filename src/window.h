@@ -1,9 +1,14 @@
 #ifndef WINDOW_H_INCLUDED
 #define WINDOW_H_INCLUDED
 
-#include "SDL2/SDL.h"
+//#include "SDL2/SDL.h"
+#include "SDL.h"
 #include <iostream>
 #include <string>
+
+struct Path {
+    SDL_Texture *personRight;
+};
 
 class Window {
     bool game;
@@ -18,7 +23,7 @@ public:
     void rendererInit();
 protected:
     SDL_Window *window;
-		int SCREEN_WIDTH;
+    int SCREEN_WIDTH;
     int SCREEN_HEIGHT;
 };
 
