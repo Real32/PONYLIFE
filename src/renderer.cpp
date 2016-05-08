@@ -1,7 +1,6 @@
 #include "renderer.h"
 #include "grass.h"
 #include "player.h"
-#include "event.h"
 
 Renderer::Renderer()
 {
@@ -21,7 +20,6 @@ bool Renderer::createRenderer(SDL_Window *window)
 			std::cout << "CreateRenderer. " << SDL_GetError() << std::endl;
       return false;
     }
-    std::cout << "Renderer " << renderer << std::endl;
     SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
     SDL_RenderClear(renderer);
     return true;
@@ -56,14 +54,16 @@ void Renderer::applySurface(int x, int y, SDL_Texture *tex, SDL_Renderer *rend){
 void Renderer::initBackground()
 {
     Grass grass;
+    Player player;
 
-    SDL_Texture *background = NULL;
+    SDL_Texture *background = NULL, *appleTexture = NULL;
     background = grass.CreateBackground(renderer);
-    initPerson(background);
+    appleTexture = grass.CreateApple(renderer);
+    std::cout << "appleTexture - " << appleTexture << " background - " << background << std::endl;
+
+    player.createPerson(renderer,background,appleTexture);
 }
 
 void Renderer::initPerson(SDL_Texture *background)
 {
-    Player player;
-    player.createPerson(renderer,background);
 }

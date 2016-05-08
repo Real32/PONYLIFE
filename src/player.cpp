@@ -1,8 +1,5 @@
 #include "player.h"
-#include "event.h"
 
-const int WALKING_ANIMATION_FRAMES = 16;
-SDL_Rect gSpriteClips[WALKING_ANIMATION_FRAMES];
 Player gSpriteSheetTexture;
 
 int mWidth = 0;
@@ -15,9 +12,17 @@ Player::Player()
 	coordX = 0;
 	file = "";
 	direction = 1;
-	directionNew = 0;
 	x = 0;
-	y = 0;
+	hungry = 16;
+	apple = 3;
+	WALKING_ANIMATION_FRAMES = 16;
+	gSpriteClips = new SDL_Rect[WALKING_ANIMATION_FRAMES];
+    img_path = new ImgPath;
+	img_path->ponyWalkLeft = "PonyLeftWalk.bmp";
+	img_path->ponyWalkRight = "PonyRightWalk.bmp";
+	img_path->ponyStayLeft = "PonyLeft.bmp";
+	img_path->ponyStayRight = "PonyRight.bmp";
+
 }
 
 Player::~Player()
@@ -33,6 +38,8 @@ void Player::free()
 		person = NULL;
 		mWidth = 0;
 		mHeight = 0;
+		delete[] gSpriteClips;
+		delete &img_path;
 	}
 }
 
@@ -47,7 +54,7 @@ void Player::render( int x, int y, SDL_Rect* clip,SDL_Renderer *renderer)
 	SDL_RenderCopy( renderer, person, clip, &renderQuad );
 }
 
-void Player::createPerson(SDL_Renderer *renderer,SDL_Texture *background)
+void Player::createPerson(SDL_Renderer *renderer,SDL_Texture *background, SDL_Texture *appleTexture)
 {
 	SDL_Rect* currentClip = &gSpriteClips[ 0 / 2 ];
 	bool quit = false;
@@ -59,36 +66,36 @@ void Player::createPerson(SDL_Renderer *renderer,SDL_Texture *background)
 	else
 	if(1)
 	{
-		animation(renderer,background,currentClip,0);
-		SDL_RenderPresent( renderer );
+		animation(renderer,background,currentClip,0,appleTexture);
+		//applySurface(100,100,appleTexture,renderer);
+		//SDL_RenderPresent( renderer );
 		while( !quit )
 		{
+
 			while( SDL_PollEvent( &event ) != 0 )
 			{
 				switch(event.type)
 				{
 					case SDL_KEYUP:
-					animation(renderer,background,currentClip,0);
+					animation(renderer,background,currentClip,0,appleTexture);
 					break;
 					case SDL_KEYDOWN:
-							switch(event.key.keysym.sym)
-								{
-									case SDLK_ESCAPE:
-											quit = true;
-											break;
-									case SDLK_LEFT:
-											//loadMedia(renderer);
-											animation(renderer, background,currentClip,1);
-											if(direction!=0) { direction = 0;
-											std::cout << "direction - " << direction << std::endl; }
-											break;
-									case SDLK_RIGHT:
-											//loadMedia(renderer);
-											animation(renderer, background,currentClip,2);
-											if(direction!=1) { direction = 1;
-											std::cout << "direction - " << direction << std::endl; }
-											break;
-								}
+                        switch(event.key.keysym.sym)
+                            {
+                                case SDLK_ESCAPE:
+                                        quit = true;
+                                        break;
+                                case SDLK_LEFT:
+                                        if(direction!=0) direction = 0;
+                                        if(x-5<0) { animation(renderer,background,currentClip,0,appleTexture); break; }
+                                        animation(renderer, background,currentClip,1,appleTexture);
+                                        break;
+                                case SDLK_RIGHT:
+                                        if(direction!=1) direction = 1;
+                                        if(x+84+5>800) { animation(renderer,background,currentClip,0,appleTexture); break; }
+                                        animation(renderer, background,currentClip,2,appleTexture);
+                                        break;
+                            }
 				break;
 				}
 			}
@@ -96,24 +103,29 @@ void Player::createPerson(SDL_Renderer *renderer,SDL_Texture *background)
 	}
 }
 
-void Player::animation(SDL_Renderer *renderer, SDL_Texture *background,SDL_Rect* currentClip, int state)
+void Player::animation(SDL_Renderer *renderer, SDL_Texture *background,SDL_Rect* currentClip, int state, SDL_Texture *appleTexture)
 {
+    //SDL_RenderClear(renderer);
+
     switch(state)
 		{
 			case 0:
-					std::cout << "direction " << direction << std::endl;
 					if(direction==0)
-							file = "C:/Users/Realism32/Documents/ExlipseProjects/IamRainbow/src/PonyLeft.bmp";
+							file = img_path->ponyStayLeft;
 					if(direction==1)
-							file = "C:/Users/Realism32/Documents/ExlipseProjects/IamRainbow/src/PonyRight.bmp";
+							file = img_path->ponyStayRight;
 					frame = 0;
 					break;
 			case 1:
-					file = "C:/Users/Realism32/Documents/ExlipseProjects/IamRainbow/src/PonyLeftWalk.bmp";
+					file = img_path->ponyWalkLeft;
 					coordX = coordX - 10;
 					break;
 			case 2:
-					file = "C:/Users/Realism32/Documents/ExlipseProjects/IamRainbow/src/PonyRightWalk.bmp";
+					file = img_path->ponyWalkRight;
+					coordX = coordX + 10;
+					break;
+            case 3:
+                    file = "apple.bmp";
 					coordX = coordX + 10;
 					break;
     }
@@ -124,9 +136,12 @@ void Player::animation(SDL_Renderer *renderer, SDL_Texture *background,SDL_Rect*
     SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
     SDL_RenderCopy(renderer,background, NULL, NULL);
     currentClip = &gSpriteClips[ frame / 2 ];
-    gSpriteSheetTexture.render( ( SCREEN_WIDTH - currentClip->w + coordX ) / 2, 270 , currentClip,renderer);
+    x = ( SCREEN_WIDTH - currentClip->w + coordX ) / 2;
+    gSpriteSheetTexture.render(x, 270 , currentClip,renderer);
     SDL_RenderPresent( renderer );
     ++frame;
+    hungry--;
+    if(!hungry) { std::cout << "I AM HUNGRY" << std::endl; hungry = 32;}
     if( frame / 2 >= WALKING_ANIMATION_FRAMES )
     {
 			frame = 0;
@@ -161,7 +176,7 @@ bool Player::loadFromFile( std::string path,SDL_Renderer *renderer)
 	else
 	{
 		SDL_SetColorKey( loadedSurface, SDL_TRUE, SDL_MapRGB( loadedSurface->format, 255, 0, 210 ) );
-		newTexture = SDL_CreateTextureFromSurface(renderer,loadedSurface );
+		newTexture = SDL_CreateTextureFromSurface(renderer,loadedSurface);
 		if( newTexture == NULL )
 		{
 			std::cout << "Unable to create texture from! SDL Error: " << path.c_str() << std::endl;
