@@ -2,11 +2,12 @@
 
 Player gSpriteSheetTexture;
 
-int mWidth = 0;
-int mHeight = 0;
+
 
 Player::Player()
 {
+    mWidth = 0;
+    mHeight = 0;
 	person = NULL;
 	frame = 0;
 	coordX = 0;
@@ -14,8 +15,8 @@ Player::Player()
 	direction = 1;
 	x = 0;
 	hungry = 16;
-	apple = 3;
 	WALKING_ANIMATION_FRAMES = 16;
+	currentClip = &gSpriteClips[ 0 / 2 ];
 	gSpriteClips = new SDL_Rect[WALKING_ANIMATION_FRAMES];
     img_path = new ImgPath;
 	img_path->ponyWalkLeft = "PonyLeftWalk.bmp";
@@ -54,59 +55,16 @@ void Player::render( int x, int y, SDL_Rect* clip,SDL_Renderer *renderer)
 	SDL_RenderCopy( renderer, person, clip, &renderQuad );
 }
 
-void Player::createPerson(SDL_Renderer *renderer,SDL_Texture *background, SDL_Texture *appleTexture)
+void Player::createPerson()
 {
-	SDL_Rect* currentClip = &gSpriteClips[ 0 / 2 ];
-	bool quit = false;
-	SDL_Event event;
-	if(!loadMedia(renderer))
+	if(!loadMedia())
 	{
 		std::cout << "Failed to load media!" << std::endl;
 	}
-	else
-	if(1)
-	{
-		animation(renderer,background,currentClip,0,appleTexture);
-		//applySurface(100,100,appleTexture,renderer);
-		//SDL_RenderPresent( renderer );
-		while( !quit )
-		{
-
-			while( SDL_PollEvent( &event ) != 0 )
-			{
-				switch(event.type)
-				{
-					case SDL_KEYUP:
-					animation(renderer,background,currentClip,0,appleTexture);
-					break;
-					case SDL_KEYDOWN:
-                        switch(event.key.keysym.sym)
-                            {
-                                case SDLK_ESCAPE:
-                                        quit = true;
-                                        break;
-                                case SDLK_LEFT:
-                                        if(direction!=0) direction = 0;
-                                        if(x-5<0) { animation(renderer,background,currentClip,0,appleTexture); break; }
-                                        animation(renderer, background,currentClip,1,appleTexture);
-                                        break;
-                                case SDLK_RIGHT:
-                                        if(direction!=1) direction = 1;
-                                        if(x+84+5>800) { animation(renderer,background,currentClip,0,appleTexture); break; }
-                                        animation(renderer, background,currentClip,2,appleTexture);
-                                        break;
-                            }
-				break;
-				}
-			}
-		}
-	}
 }
 
-void Player::animation(SDL_Renderer *renderer, SDL_Texture *background,SDL_Rect* currentClip, int state, SDL_Texture *appleTexture)
+void Player::animation(int state)
 {
-    //SDL_RenderClear(renderer);
-
     switch(state)
 		{
 			case 0:
@@ -124,21 +82,17 @@ void Player::animation(SDL_Renderer *renderer, SDL_Texture *background,SDL_Rect*
 					file = img_path->ponyWalkRight;
 					coordX = coordX + 10;
 					break;
-            case 3:
-                    file = "apple.bmp";
-					coordX = coordX + 10;
-					break;
     }
-    if( !gSpriteSheetTexture.loadFromFile( file,renderer ) )
+    if( !gSpriteSheetTexture.loadFromFile(file,getRenderer()))
     {
 			std::cout << "Failed to load walking animation texture!\n" << std::endl;
     }
-    SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
-    SDL_RenderCopy(renderer,background, NULL, NULL);
+    SDL_SetRenderDrawColor(getRenderer(), 0xFF, 0xFF, 0xFF, 0xFF );
+    SDL_RenderCopy(getRenderer(),getBackground(), NULL, NULL);
     currentClip = &gSpriteClips[ frame / 2 ];
     x = ( SCREEN_WIDTH - currentClip->w + coordX ) / 2;
-    gSpriteSheetTexture.render(x, 270 , currentClip,renderer);
-    SDL_RenderPresent( renderer );
+    gSpriteSheetTexture.render(x, 270 , currentClip,getRenderer());
+    SDL_RenderPresent(getRenderer());
     ++frame;
     hungry--;
     if(!hungry) { std::cout << "I AM HUNGRY" << std::endl; hungry = 32;}
@@ -148,17 +102,17 @@ void Player::animation(SDL_Renderer *renderer, SDL_Texture *background,SDL_Rect*
     }
 }
 
-bool Player::loadMedia(SDL_Renderer *renderer)
+bool Player::loadMedia()
 {
 	bool success = true;
 	int frameStep = 0;
 	frameStep = 0;
 	for(int i = 0; i < 16; ++i)
 	{
-		gSpriteClips[ i ].x =   frameStep;
-		gSpriteClips[ i ].y =   0;
-		gSpriteClips[ i ].w =  84;
-		gSpriteClips[ i ].h =  84;
+		gSpriteClips[i].x =   frameStep;
+		gSpriteClips[i].y =   0;
+		gSpriteClips[i].w =  84;
+		gSpriteClips[i].h =  84;
 		frameStep+=84;
 	}
 	return success;
