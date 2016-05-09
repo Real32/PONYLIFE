@@ -2,28 +2,34 @@
 
 Player gSpriteSheetTexture;
 
-
-
 Player::Player()
 {
+    x = 0;
+    y = 270;
+    coordX = 0;
+    coordY = 0;
+
     mWidth = 0;
     mHeight = 0;
-	person = NULL;
-	frame = 0;
-	coordX = 0;
+
 	file = "";
 	direction = 1;
-	x = 0;
+	fly = false;
 	hungry = 16;
-	WALKING_ANIMATION_FRAMES = 16;
-	currentClip = &gSpriteClips[ 0 / 2 ];
-	gSpriteClips = new SDL_Rect[WALKING_ANIMATION_FRAMES];
-    img_path = new ImgPath;
-	img_path->ponyWalkLeft = "PonyLeftWalk.bmp";
-	img_path->ponyWalkRight = "PonyRightWalk.bmp";
-	img_path->ponyStayLeft = "PonyLeft.bmp";
-	img_path->ponyStayRight = "PonyRight.bmp";
 
+	person = NULL;
+	frame = 0;
+	WALKING_ANIMATION_FRAMES = 16;
+	gSpriteClips = new SDL_Rect[WALKING_ANIMATION_FRAMES];
+	currentClip = &gSpriteClips[ 0 / 2 ];
+
+    img_path = new ImgPath;
+	img_path->ponyWalkRight = "PonyRightWalk.bmp";
+	img_path->ponyWalkLeft = "PonyLeftWalk.bmp";
+	img_path->ponyStayRight = "PonyRight.bmp";
+	img_path->ponyStayLeft = "PonyLeft.bmp";
+	img_path->ponyFlyRight = "PonyRightFly.bmp";
+	img_path->ponyFlyLeft = "PonyLeftFly.bmp";
 }
 
 Player::~Player()
@@ -82,16 +88,25 @@ void Player::animation(int state)
 					file = img_path->ponyWalkRight;
 					coordX = coordX + 10;
 					break;
+            case 3:
+                    coordY-=5;
+                    break;
+            case 4:
+                    coordY+=5;
+                    break;
     }
-    if( !gSpriteSheetTexture.loadFromFile(file,getRenderer()))
+    if(!gSpriteSheetTexture.loadFromFile(file,getRenderer()))
     {
 			std::cout << "Failed to load walking animation texture!\n" << std::endl;
     }
     SDL_SetRenderDrawColor(getRenderer(), 0xFF, 0xFF, 0xFF, 0xFF );
     SDL_RenderCopy(getRenderer(),getBackground(), NULL, NULL);
-    currentClip = &gSpriteClips[ frame / 2 ];
+    currentClip = &gSpriteClips[ frame / 2 ];\
+    //std::cout << currentClip->x << " "  << currentClip->y << " " << currentClip->w << " " << currentClip->h << " " << std::endl;
     x = ( SCREEN_WIDTH - currentClip->w + coordX ) / 2;
-    gSpriteSheetTexture.render(x, 270 , currentClip,getRenderer());
+    y = 270 + coordY;
+    //std::cout << "y - " << y << " coordY - " << coordY << std::endl;
+    gSpriteSheetTexture.render(x, y , currentClip,getRenderer());
     SDL_RenderPresent(getRenderer());
     ++frame;
     hungry--;
@@ -141,7 +156,7 @@ bool Player::loadFromFile( std::string path,SDL_Renderer *renderer)
 			mWidth = loadedSurface->w;
 			mHeight = loadedSurface->h;
 		}
-		SDL_FreeSurface( loadedSurface );
+		SDL_FreeSurface(loadedSurface);
 	}
 	person = newTexture;
 	return person != NULL;

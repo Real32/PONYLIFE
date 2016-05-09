@@ -5,10 +5,12 @@
 
 class Grass: public Renderer {
     SDL_Texture *background;
+    SDL_Texture *apple;
 public:
     Grass();
     ~Grass();
     SDL_Texture* getBackground() { return background; }
+    SDL_Texture* getApple() { return apple; }
     void createBackground();
 };
 
