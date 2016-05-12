@@ -18,9 +18,8 @@ int main(int argc, char** argv)
     game.animation(0);
     bool stay = true;
     while(!game.getQuit())
-    {
-        if(game.getY()-5<0) { game.animation(0); break; }
-        //std::cout << "!!!" << std::endl;
+    {if(game.getY()-5<0) { game.animation(0); break; }
+        std::cout << "!!!" << std::endl;
         if(stay)
         {
             if(game.getFly())
