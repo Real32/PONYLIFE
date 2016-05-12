@@ -1,13 +1,8 @@
 #include "window.h"
-#include "renderer.h"
-#include "grass.h"
 
 Window::Window()
 {
-    SCREEN_WIDTH = 800;
-    SCREEN_HEIGHT = 365;
     window = NULL;
-    game = 1;
 }
 
 Window::~Window()
@@ -30,11 +25,4 @@ bool Window::createWindow()
 			return false;
     }
     return true;
-}
-
-void Window::rendererInit()
-{
-	Renderer render;
-	render.createRenderer(window);
-	render.initBackground();
 }
