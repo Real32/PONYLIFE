@@ -71,28 +71,58 @@ void Player::createPerson()
 
 void Player::animation(int state)
 {
+    int step = 2;
     switch(state)
 		{
 			case 0:
 					if(direction==0)
+					{
+                        if(fly!=true)
 							file = img_path->ponyStayLeft;
+                        else
+                            file = img_path->ponyFlyLeft;
+					}
 					if(direction==1)
+                    {
+						if(fly!=true)
 							file = img_path->ponyStayRight;
+                        else
+                            file = img_path->ponyFlyRight;
+                    }
 					frame = 0;
 					break;
 			case 1:
-					file = img_path->ponyWalkLeft;
+
+                    if(fly!=true) file = img_path->ponyWalkLeft;
+                    else file = img_path->ponyFlyLeft;
 					coordX = coordX - 10;
 					break;
 			case 2:
-					file = img_path->ponyWalkRight;
+                    if(fly!=true) file = img_path->ponyWalkRight;
+					else file = img_path->ponyFlyRight;
 					coordX = coordX + 10;
 					break;
             case 3:
+                    if(direction==0)
+							file = img_path->ponyFlyLeft;
+					if(direction==1)
+							file = img_path->ponyFlyRight;
                     coordY-=5;
                     break;
             case 4:
+                    if(direction==0)
+							file = img_path->ponyFlyLeft;
+					if(direction==1)
+							file = img_path->ponyFlyRight;
                     coordY+=5;
+                    break;
+            case 5:
+                    if(direction==0)
+							file = img_path->ponyFlyLeft;
+					if(direction==1)
+							file = img_path->ponyFlyRight;
+                    coordY+=0;
+                    step = 4;
                     break;
     }
     if(!gSpriteSheetTexture.loadFromFile(file,getRenderer()))
@@ -101,17 +131,15 @@ void Player::animation(int state)
     }
     SDL_SetRenderDrawColor(getRenderer(), 0xFF, 0xFF, 0xFF, 0xFF );
     SDL_RenderCopy(getRenderer(),getBackground(), NULL, NULL);
-    currentClip = &gSpriteClips[ frame / 2 ];\
-    //std::cout << currentClip->x << " "  << currentClip->y << " " << currentClip->w << " " << currentClip->h << " " << std::endl;
+    currentClip = &gSpriteClips[ frame / step];
     x = ( SCREEN_WIDTH - currentClip->w + coordX ) / 2;
     y = 270 + coordY;
-    //std::cout << "y - " << y << " coordY - " << coordY << std::endl;
     gSpriteSheetTexture.render(x, y , currentClip,getRenderer());
     SDL_RenderPresent(getRenderer());
     ++frame;
     hungry--;
     if(!hungry) { std::cout << "I AM HUNGRY" << std::endl; hungry = 32;}
-    if( frame / 2 >= WALKING_ANIMATION_FRAMES )
+    if( frame / step >= WALKING_ANIMATION_FRAMES )
     {
 			frame = 0;
     }

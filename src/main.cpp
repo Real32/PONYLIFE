@@ -16,28 +16,38 @@ int main(int argc, char** argv)
     game.createPerson();
 
     game.animation(0);
+    bool stay = true;
     while(!game.getQuit())
     {if(game.getY()-5<0) { game.animation(0); break; }
+        std::cout << "!!!" << std::endl;
+        if(stay)
+        {
+            if(game.getFly())
+                game.animation(5);
+        }
         while(SDL_PollEvent(&event)!= 0)
         {
             //game.action(game.getX());
             switch(event.type)
             {
                 case SDL_KEYUP:
-                game.animation(0);
+                    stay = true;
+                    game.animation(0);
                 break;
                 case SDL_KEYDOWN:
+                    stay = false;
                     switch(event.key.keysym.sym)
                         {
                             case SDLK_ESCAPE:
                                 game.setQuit(true);
                                 break;
                             case SDLK_UP:
-                                if(game.getY()<=0) { game.animation(0); break; }
+                                if(!game.getFly()) game.setFly(true);
+                                if(game.getY()==0) { game.animation(0); break; }
                                 game.animation(3);
                                 break;
                             case SDLK_DOWN:
-                                if(game.getY()==270) { game.animation(0); break; }
+                                if(game.getY()==270) { game.animation(0); game.setFly(false); break; }
                                 game.animation(4);
                                 break;
                             case SDLK_LEFT:

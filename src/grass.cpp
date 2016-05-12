@@ -1,7 +1,5 @@
 #include "grass.h"
 
-Grass appleObj;
-
 Grass::Grass()
 {
 	background = NULL;

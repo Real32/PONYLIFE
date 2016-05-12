@@ -38,6 +38,8 @@ public:
     void free();
     int getDirection() { return direction; }
     void setDirection(int _direction) { direction = _direction; }
+    int getFly() { return fly; }
+    void setFly(int _fly) { fly = _fly; }
     int getX() { return x; }
     int getY() { return y; }
     void render(int x, int y, SDL_Rect* clip,SDL_Renderer *renderer);
