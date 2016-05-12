@@ -1,6 +1,4 @@
 #include "renderer.h"
-#include "grass.h"
-#include "player.h"
 
 Renderer::Renderer()
 {
@@ -12,9 +10,9 @@ Renderer::~Renderer()
     SDL_DestroyRenderer(renderer);
 }
 
-bool Renderer::createRenderer(SDL_Window *window)
+bool Renderer::createRenderer()
 {
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(getWindow(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (renderer == NULL)
 		{
 			std::cout << "CreateRenderer. " << SDL_GetError() << std::endl;
@@ -44,26 +42,9 @@ SDL_Texture* Renderer::loadImage(std::string file, SDL_Renderer *renderer)
 }
 
 void Renderer::applySurface(int x, int y, SDL_Texture *tex, SDL_Renderer *rend){
-   SDL_Rect pos;
-   pos.x = x;
-   pos.y = y;
-   SDL_QueryTexture(tex, NULL, NULL, &pos.w, &pos.h);
-   SDL_RenderCopy(rend, tex, NULL, &pos);
-}
-
-void Renderer::initBackground()
-{
-    Grass grass;
-    Player player;
-
-    SDL_Texture *background = NULL, *appleTexture = NULL;
-    background = grass.CreateBackground(renderer);
-    appleTexture = grass.CreateApple(renderer);
-    std::cout << "appleTexture - " << appleTexture << " background - " << background << std::endl;
-
-    player.createPerson(renderer,background,appleTexture);
-}
-
-void Renderer::initPerson(SDL_Texture *background)
-{
+    SDL_Rect pos;
+    pos.x = x;
+    pos.y = y;
+    SDL_QueryTexture(tex, NULL, NULL, &pos.w, &pos.h);
+    SDL_RenderCopy(rend, tex, NULL, &pos);
 }

@@ -6,25 +6,26 @@
 #include <iostream>
 #include <string>
 
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 365
+
+class Renderer;
+class Grass;
+class Player;
+class Game;
+
 struct Path {
     SDL_Texture *personRight;
 };
 
 class Window {
-    bool game;
+    SDL_Window *window;
+
 public:
     Window();
     ~Window();
-    int  getSCREEN_WIDTH() { return SCREEN_WIDTH; }
-    int  getSCREEN_HEIGHT() { return SCREEN_HEIGHT; }
-    bool getGame() { return game; }
-    void setGame(bool _game) { game = _game; }
+    SDL_Window* getWindow() {return window;}
     bool createWindow();
-    void rendererInit();
-protected:
-    SDL_Window *window;
-    int SCREEN_WIDTH;
-    int SCREEN_HEIGHT;
 };
 
 #endif // WINDOW_H_INCLUDED

@@ -2,27 +2,34 @@
 
 Player gSpriteSheetTexture;
 
-int mWidth = 0;
-int mHeight = 0;
-
 Player::Player()
 {
-	person = NULL;
-	frame = 0;
-	coordX = 0;
+    x = 0;
+    y = 270;
+    coordX = 0;
+    coordY = 0;
+
+    mWidth = 0;
+    mHeight = 0;
+
 	file = "";
 	direction = 1;
-	x = 0;
+	fly = false;
 	hungry = 16;
-	apple = 3;
+
+	person = NULL;
+	frame = 0;
 	WALKING_ANIMATION_FRAMES = 16;
 	gSpriteClips = new SDL_Rect[WALKING_ANIMATION_FRAMES];
-    img_path = new ImgPath;
-	img_path->ponyWalkLeft = "PonyLeftWalk.bmp";
-	img_path->ponyWalkRight = "PonyRightWalk.bmp";
-	img_path->ponyStayLeft = "PonyLeft.bmp";
-	img_path->ponyStayRight = "PonyRight.bmp";
+	currentClip = &gSpriteClips[ 0 / 2 ];
 
+    img_path = new ImgPath;
+	img_path->ponyWalkRight = "PonyRightWalk.bmp";
+	img_path->ponyWalkLeft = "PonyLeftWalk.bmp";
+	img_path->ponyStayRight = "PonyRight.bmp";
+	img_path->ponyStayLeft = "PonyLeft.bmp";
+	img_path->ponyFlyRight = "PonyRightFly.bmp";
+	img_path->ponyFlyLeft = "PonyLeftFly.bmp";
 }
 
 Player::~Player()
@@ -54,111 +61,101 @@ void Player::render( int x, int y, SDL_Rect* clip,SDL_Renderer *renderer)
 	SDL_RenderCopy( renderer, person, clip, &renderQuad );
 }
 
-void Player::createPerson(SDL_Renderer *renderer,SDL_Texture *background, SDL_Texture *appleTexture)
+void Player::createPerson()
 {
-	SDL_Rect* currentClip = &gSpriteClips[ 0 / 2 ];
-	bool quit = false;
-	SDL_Event event;
-	if(!loadMedia(renderer))
+	if(!loadMedia())
 	{
 		std::cout << "Failed to load media!" << std::endl;
 	}
-	else
-	if(1)
-	{
-		animation(renderer,background,currentClip,0,appleTexture);
-		//applySurface(100,100,appleTexture,renderer);
-		//SDL_RenderPresent( renderer );
-		while( !quit )
-		{
-
-			while( SDL_PollEvent( &event ) != 0 )
-			{
-				switch(event.type)
-				{
-					case SDL_KEYUP:
-					animation(renderer,background,currentClip,0,appleTexture);
-					break;
-					case SDL_KEYDOWN:
-                        switch(event.key.keysym.sym)
-                            {
-                                case SDLK_ESCAPE:
-                                        quit = true;
-                                        break;
-                                case SDLK_LEFT:
-                                        if(direction!=0) direction = 0;
-                                        if(x-5<0) { animation(renderer,background,currentClip,0,appleTexture); break; }
-                                        animation(renderer, background,currentClip,1,appleTexture);
-                                        break;
-                                case SDLK_RIGHT:
-                                        if(direction!=1) direction = 1;
-                                        if(x+84+5>800) { animation(renderer,background,currentClip,0,appleTexture); break; }
-                                        animation(renderer, background,currentClip,2,appleTexture);
-                                        break;
-                            }
-				break;
-				}
-			}
-		}
-	}
 }
 
-void Player::animation(SDL_Renderer *renderer, SDL_Texture *background,SDL_Rect* currentClip, int state, SDL_Texture *appleTexture)
+void Player::animation(int state)
 {
-    //SDL_RenderClear(renderer);
-
+    int step = 2;
     switch(state)
 		{
 			case 0:
 					if(direction==0)
+					{
+                        if(fly!=true)
 							file = img_path->ponyStayLeft;
+                        else
+                            file = img_path->ponyFlyLeft;
+					}
 					if(direction==1)
+                    {
+						if(fly!=true)
 							file = img_path->ponyStayRight;
+                        else
+                            file = img_path->ponyFlyRight;
+                    }
 					frame = 0;
 					break;
 			case 1:
-					file = img_path->ponyWalkLeft;
+
+                    if(fly!=true) file = img_path->ponyWalkLeft;
+                    else file = img_path->ponyFlyLeft;
 					coordX = coordX - 10;
 					break;
 			case 2:
-					file = img_path->ponyWalkRight;
+                    if(fly!=true) file = img_path->ponyWalkRight;
+					else file = img_path->ponyFlyRight;
 					coordX = coordX + 10;
 					break;
             case 3:
-                    file = "apple.bmp";
-					coordX = coordX + 10;
-					break;
+                    if(direction==0)
+							file = img_path->ponyFlyLeft;
+					if(direction==1)
+							file = img_path->ponyFlyRight;
+                    coordY-=5;
+                    break;
+            case 4:
+                    if(direction==0)
+							file = img_path->ponyFlyLeft;
+					if(direction==1)
+							file = img_path->ponyFlyRight;
+                    coordY+=5;
+                    break;
+            case 5:
+                    if(direction==0)
+							file = img_path->ponyFlyLeft;
+					if(direction==1)
+							file = img_path->ponyFlyRight;
+                    coordY+=0;
+                    step = 4;
+                    break;
     }
-    if( !gSpriteSheetTexture.loadFromFile( file,renderer ) )
+    if(!gSpriteSheetTexture.loadFromFile(file,getRenderer()))
     {
 			std::cout << "Failed to load walking animation texture!\n" << std::endl;
     }
-    SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
-    SDL_RenderCopy(renderer,background, NULL, NULL);
-    currentClip = &gSpriteClips[ frame / 2 ];
+    SDL_SetRenderDrawColor(getRenderer(), 0xFF, 0xFF, 0xFF, 0xFF );
+    SDL_RenderCopy(getRenderer(),getBackground(), NULL, NULL);
+    currentClip = &gSpriteClips[ frame / step];
     x = ( SCREEN_WIDTH - currentClip->w + coordX ) / 2;
-    gSpriteSheetTexture.render(x, 270 , currentClip,renderer);
-    SDL_RenderPresent( renderer );
+    y = 270 + coordY;
+    gSpriteSheetTexture.render(x, y , currentClip,getRenderer());
+    SDL_RenderPresent(getRenderer());
     ++frame;
     hungry--;
     if(!hungry) { std::cout << "I AM HUNGRY" << std::endl; hungry = 32;}
-    if( frame / 2 >= WALKING_ANIMATION_FRAMES )
+    if( frame / step >= WALKING_ANIMATION_FRAMES )
     {
 			frame = 0;
     }
 }
 
-bool Player::loadMedia(SDL_Renderer *renderer)
+bool Player::loadMedia()
 {
 	bool success = true;
 	int frameStep = 0;
 	frameStep = 0;
 	for(int i = 0; i < 16; ++i)
 	{
-		gSpriteClips[ i ].x =   frameStep;
-		gSpriteClips[ i ].y =   0;
-		gSpriteClips[ i ].w =  84;
-		gSpriteClips[ i ].h =  84;
+		gSpriteClips[i].x =   frameStep;
+		gSpriteClips[i].y =   0;
+		gSpriteClips[i].w =  84;
+		gSpriteClips[i].h =  84;
 		frameStep+=84;
 	}
 	return success;
@@ -187,7 +184,7 @@ bool Player::loadFromFile( std::string path,SDL_Renderer *renderer)
 			mWidth = loadedSurface->w;
 			mHeight = loadedSurface->h;
 		}
-		SDL_FreeSurface( loadedSurface );
+		SDL_FreeSurface(loadedSurface);
 	}
 	person = newTexture;
 	return person != NULL;
